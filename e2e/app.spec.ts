@@ -72,6 +72,7 @@ test.describe('Core User Flows', () => {
 
   test('should mark assignment as viewed on first participant visit', async ({ page }) => {
     await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
 
     await page.getByRole('button', { name: /crear nuevo juego|create new game/i }).click()
     await page.getByLabel(/nombre del evento|event name/i).fill('Confetti Test Event')
@@ -91,20 +92,25 @@ test.describe('Core User Flows', () => {
     await page.getByRole('button', { name: /siguiente|next/i }).click()
     await page.getByRole('button', { name: /finalizar|finish/i }).click()
 
-    const participantRouteData = await page.evaluate(() => {
-      const games = JSON.parse(localStorage.getItem('ZavaGiftExchange:games') || '{}')
-      const [game] = Object.values(games) as Array<{ code: string; participants: Array<{ id: string; token?: string }> }>
-      const participant = game?.participants?.find(p => !!p.token)
-      return {
-        code: game?.code,
-        participantId: participant?.id,
-        participantToken: participant?.token
-      }
-    })
-
-    expect(participantRouteData.code).toBeTruthy()
-    expect(participantRouteData.participantId).toBeTruthy()
-    expect(participantRouteData.participantToken).toBeTruthy()
+    let participantRouteData: { code?: string; participantId?: string; participantToken?: string } = {}
+    await expect
+      .poll(async () => {
+        participantRouteData = await page.evaluate(() => {
+          const games = JSON.parse(localStorage.getItem('ZavaGiftExchange:games') || '{}')
+          const game = (Object.values(games) as Array<{ name: string; code: string; participants: Array<{ id: string; token?: string }> }>)
+            .find((g) => g.name === 'Confetti Test Event')
+          const participant = game?.participants?.find(p => !!p.token)
+          return {
+            code: game?.code,
+            participantId: participant?.id,
+            participantToken: participant?.token
+          }
+        })
+        return Boolean(participantRouteData.code && participantRouteData.participantId && participantRouteData.participantToken)
+      }, {
+        message: 'Expected stored protected game and participant token to be available'
+      })
+      .toBe(true)
 
     await page.goto(`/?code=${participantRouteData.code}&participant=${participantRouteData.participantToken}`)
     await expect(page.getByRole('heading', { name: /tu asignación|your assignment/i })).toBeVisible()

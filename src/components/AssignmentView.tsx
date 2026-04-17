@@ -75,7 +75,7 @@ export function AssignmentView({
   const [isConfirming, setIsConfirming] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [giverHasConfirmed, setGiverHasConfirmed] = useState(false)
-  const hasTriggeredConfettiRef = useRef(false)
+  const lastTriggeredConfettiKeyRef = useRef<string | null>(null)
 
   // Refresh game data from API
   const refreshGameData = useCallback(async () => {
@@ -144,26 +144,26 @@ export function AssignmentView({
   }, [currentReceiver])
 
   useEffect(() => {
-    hasTriggeredConfettiRef.current = false
-  }, [game.code, participant.id])
-
-  useEffect(() => {
-    if (!isRevealed || !currentReceiver || hasTriggeredConfettiRef.current || typeof window === 'undefined') {
+    if (!isRevealed || !currentReceiver || typeof window === 'undefined') {
       return
     }
 
     const confettiStorageKey = `assignment-viewed-${game.code}-${participant.id}`
 
+    if (lastTriggeredConfettiKeyRef.current === confettiStorageKey) {
+      return
+    }
+
     if (window.localStorage.getItem(confettiStorageKey) === 'true') {
       return
     }
 
-    hasTriggeredConfettiRef.current = true
-    window.localStorage.setItem(confettiStorageKey, 'true')
-
     if (currentParticipant.hasConfirmedAssignment) {
       return
     }
+
+    lastTriggeredConfettiKeyRef.current = confettiStorageKey
+    window.localStorage.setItem(confettiStorageKey, 'true')
 
     void import('canvas-confetti')
       .then(({ default: confetti }) => {
