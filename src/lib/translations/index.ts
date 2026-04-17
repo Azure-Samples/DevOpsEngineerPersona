@@ -4,6 +4,7 @@ import { pt } from './pt'
 import { fr } from './fr'
 import { it } from './it'
 import { ja } from './ja'
+import { ko } from './ko'
 import { zh } from './zh'
 import { de } from './de'
 import { nl } from './nl'
@@ -15,6 +16,7 @@ export const translations = {
   fr,
   it,
   ja,
+  ko,
   zh,
   de,
   nl

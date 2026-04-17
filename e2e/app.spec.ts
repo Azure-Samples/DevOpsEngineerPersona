@@ -161,7 +161,7 @@ test.describe('Core User Flows', () => {
     await expect(page.getByRole('button', { name: /crear nuevo juego|create new game/i })).toBeVisible()
   })
 
-  test('should support multiple languages including German and Dutch', async ({ page }) => {
+  test('should support multiple languages including Korean, German, and Dutch', async ({ page }) => {
     await page.goto('/')
     
     // Verify language toggle is available (use aria-haspopup to target dropdown trigger specifically)
@@ -169,7 +169,7 @@ test.describe('Core User Flows', () => {
     await expect(languageButton).toBeVisible()
     
     // Verify welcome description is visible (use paragraph element to avoid matching button text)
-    const welcomeDesc = page.locator('p').getByText(/organize|organiza|organisez|organizza|ギフト|轻松|organisieren|organiseer/i)
+    const welcomeDesc = page.locator('p').getByText(/organize|organiza|organisez|organizza|ギフト|쉽고 재미있게|轻松|organisieren|organiseer/i)
     await expect(welcomeDesc).toBeVisible()
   })
 
@@ -201,6 +201,13 @@ test.describe('Core User Flows', () => {
     await enPage.goto('/?lang=en')
     await expect(enPage.getByRole('button', { name: /create new game/i })).toBeVisible()
     await enContext.close()
+
+    // Test Korean
+    const koContext = await browser.newContext()
+    const koPage = await koContext.newPage()
+    await koPage.goto('/?lang=ko')
+    await expect(koPage.getByRole('button', { name: /새 게임 만들기/i })).toBeVisible()
+    await koContext.close()
   })
 
   test('should navigate directly to guide pages via URL parameter', async ({ page }) => {

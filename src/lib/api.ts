@@ -80,7 +80,7 @@ export interface CreateGameData {
   organizerEmail?: string
   participants: Array<{ name: string; email?: string; desiredGift: string; wish: string }>
   sendEmails?: boolean
-  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl'
+  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl'
 }
 
 export interface CreateGameResponse extends Game {
@@ -128,7 +128,7 @@ export async function updateGameAPI(
   code: string,
   action: 'requestReassignment',
   participantId: string,
-  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl'
+  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl'
 ): Promise<Game> {
   const response = await fetch(`${API_BASE_URL}/games/${code}`, {
     method: 'PATCH',
@@ -244,7 +244,7 @@ export async function updateWishAPI(
   code: string,
   participantId: string,
   wish: string,
-  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl'
+  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl'
 ): Promise<Game> {
   const response = await fetch(`${API_BASE_URL}/games/${code}`, {
     method: 'PATCH',
@@ -271,7 +271,7 @@ export async function updateParticipantEmailAPI(
   code: string,
   participantId: string,
   email: string,
-  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl'
+  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl'
 ): Promise<Game> {
   const response = await fetch(`${API_BASE_URL}/games/${code}`, {
     method: 'PATCH',
@@ -332,7 +332,7 @@ export async function updateParticipantDetailsAPI(
 export async function confirmAssignmentAPI(
   code: string,
   participantId: string,
-  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl'
+  language?: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl'
 ): Promise<Game> {
   const response = await fetch(`${API_BASE_URL}/games/${code}`, {
     method: 'PATCH',
@@ -546,7 +546,7 @@ export interface SendEmailResponse {
 export async function sendOrganizerEmailAPI(
   code: string,
   organizerToken: string,
-  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl' = 'es'
+  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl' = 'es'
 ): Promise<SendEmailResponse> {
   const response = await fetch(`${API_BASE_URL}/email/send`, {
     method: 'POST',
@@ -598,7 +598,7 @@ export async function sendParticipantEmailAPI(
 export async function sendAllParticipantEmailsAPI(
   code: string,
   organizerToken: string,
-  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl' = 'es'
+  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl' = 'es'
 ): Promise<SendEmailResponse> {
   const response = await fetch(`${API_BASE_URL}/email/send`, {
     method: 'POST',
@@ -625,7 +625,7 @@ export async function sendReminderEmailAPI(
   code: string,
   organizerToken: string,
   participantId: string,
-  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl' = 'es',
+  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl' = 'es',
   customMessage?: string
 ): Promise<SendEmailResponse> {
   const response = await fetch(`${API_BASE_URL}/email/send`, {
@@ -654,7 +654,7 @@ export async function sendReminderEmailAPI(
 export async function sendReminderToAllAPI(
   code: string,
   organizerToken: string,
-  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl' = 'es',
+  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl' = 'es',
   customMessage?: string
 ): Promise<SendEmailResponse> {
   const response = await fetch(`${API_BASE_URL}/email/send`, {
@@ -716,7 +716,7 @@ export interface RecoverOrganizerLinkResponse {
 export async function recoverOrganizerLinkAPI(
   code: string,
   email: string,
-  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl' = 'es'
+  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl' = 'es'
 ): Promise<RecoverOrganizerLinkResponse> {
   const response = await fetch(`${API_BASE_URL}/email/send`, {
     method: 'POST',
@@ -750,7 +750,7 @@ export async function recoverOrganizerLinkAPI(
 export async function recoverParticipantLinkAPI(
   code: string,
   email: string,
-  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl' = 'es'
+  language: 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl' = 'es'
 ): Promise<RecoverOrganizerLinkResponse> {
   const response = await fetch(`${API_BASE_URL}/email/send`, {
     method: 'POST',
