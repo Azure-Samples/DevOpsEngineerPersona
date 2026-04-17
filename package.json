@@ -69,7 +69,7 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.1",
+    "@axe-core/playwright": "^4.11.2",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.1.8",
@@ -81,11 +81,11 @@
     "@typescript-eslint/parser": "^8.58.0",
     "@vitejs/plugin-react-swc": "^4.3.0",
     "eslint": "^10.2.0",
-    "eslint-plugin-react-hooks": "^7.1.0-canary-00f063c3-20260415",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "tailwindcss": "^4.1.17",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.5"
   },

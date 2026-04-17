@@ -83,10 +83,11 @@ param budgetAlertEmail string = ''
 // Environment suffix for naming (pr-123, qa, prod)
 var envSuffix = environment == 'pr' ? 'pr-${prNumber}' : environment
 
-// Generate unique suffix from deployment ID to ensure consistent naming across runs
-// For PR environments: uniqueSuffix is based on PR number only (consistent across runs)
-// For staging/prod: uniqueSuffix is based on environment (stable across all deployments)
-var uniqueSuffix = uniqueString(deploymentId)
+// Generate unique suffix from resource group ID + deployment ID to ensure:
+// 1. Global uniqueness (resource group ID includes subscription ID)
+// 2. Consistent naming across runs within the same environment
+// 3. No collisions between environments or subscriptions
+var uniqueSuffix = uniqueString(resourceGroup().id, deploymentId)
 
 // Resource names with global uniqueness guarantee
 // Max 24 chars for Cosmos DB, so we use shortened names
