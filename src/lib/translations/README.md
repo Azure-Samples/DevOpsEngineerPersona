@@ -12,6 +12,7 @@ Each language has its own file:
 - `fr.ts` - French (Français)
 - `it.ts` - Italian (Italiano)
 - `ja.ts` - Japanese (日本語)
+- `ko.ts` - Korean (한국어)
 - `zh.ts` - Chinese (中文)
 - `de.ts` - German (Deutsch)
 - `nl.ts` - Dutch (Nederlands)

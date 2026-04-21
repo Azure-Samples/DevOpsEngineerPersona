@@ -80,7 +80,7 @@ export interface Game {
   archivedAt?: number // Unix timestamp in milliseconds since epoch when the game was archived (Date.now())
 }
 
-export type Language = 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl'
+export type Language = 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'ko' | 'zh' | 'de' | 'nl'
 
 export interface LanguageOption {
   code: Language
@@ -96,6 +96,7 @@ export const LANGUAGES: LanguageOption[] = [
   { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
   { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
   { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
   { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
   { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
   { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
