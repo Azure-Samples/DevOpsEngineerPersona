@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -75,6 +75,7 @@ export function AssignmentView({
   const [isConfirming, setIsConfirming] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [giverHasConfirmed, setGiverHasConfirmed] = useState(false)
+  const lastTriggeredConfettiKeyRef = useRef<string | null>(null)
 
   // Refresh game data from API
   const refreshGameData = useCallback(async () => {
@@ -141,6 +142,41 @@ export function AssignmentView({
     const timer = setTimeout(() => setIsRevealed(true), 300)
     return () => clearTimeout(timer)
   }, [currentReceiver])
+
+  useEffect(() => {
+    if (!isRevealed || !currentReceiver || typeof window === 'undefined') {
+      return
+    }
+
+    const confettiStorageKey = `assignment-viewed-${game.code}-${participant.id}`
+
+    if (lastTriggeredConfettiKeyRef.current === confettiStorageKey) {
+      return
+    }
+
+    if (window.localStorage.getItem(confettiStorageKey) === 'true') {
+      return
+    }
+
+    if (currentParticipant.hasConfirmedAssignment) {
+      return
+    }
+
+    lastTriggeredConfettiKeyRef.current = confettiStorageKey
+    window.localStorage.setItem(confettiStorageKey, 'true')
+
+    void import('canvas-confetti')
+      .then(({ default: confetti }) => {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.65 }
+        })
+      })
+      .catch(() => {
+        // Ignore confetti loading errors to avoid breaking assignment view
+      })
+  }, [isRevealed, currentReceiver, game.code, participant.id, currentParticipant.hasConfirmedAssignment])
 
   // Note: No mount-time refresh needed - game data is already loaded when entering this view
   // refreshGameData is available for manual refresh via the refresh button only

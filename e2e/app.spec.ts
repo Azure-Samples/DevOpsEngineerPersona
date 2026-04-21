@@ -70,6 +70,56 @@ test.describe('Core User Flows', () => {
     await expect(page.getByRole('button', { name: /ir al|go to/i })).toBeVisible()
   })
 
+  test('should mark assignment as viewed on first participant visit', async ({ page }) => {
+    await page.goto('/')
+    await page.evaluate(() => localStorage.clear())
+
+    await page.getByRole('button', { name: /crear nuevo juego|create new game/i }).click()
+    await page.getByLabel(/nombre del evento|event name/i).fill('Confetti Test Event')
+    await page.getByLabel(/monto del regalo|gift amount/i).fill('35')
+    await page.getByLabel(/fecha del evento|event date/i).fill(getFutureDate())
+    await page.getByLabel(/lugar del evento|event location/i).fill('Office')
+    await page.getByRole('button', { name: /siguiente|next/i }).click()
+
+    const participantInput = page.getByPlaceholder(/maría garcía|mary smith/i)
+    const addButton = page.getByRole('button', { name: /agregar participante|add participant/i })
+    await participantInput.fill('Anna')
+    await addButton.click()
+    await participantInput.fill('Ben')
+    await addButton.click()
+    await participantInput.fill('Cara')
+    await addButton.click()
+    await page.getByRole('button', { name: /siguiente|next/i }).click()
+    await page.getByRole('button', { name: /finalizar|finish/i }).click()
+
+    let participantRouteData: { code?: string; participantId?: string; participantToken?: string } = {}
+    await expect
+      .poll(async () => {
+        participantRouteData = await page.evaluate(() => {
+          const games = JSON.parse(localStorage.getItem('ZavaGiftExchange:games') || '{}')
+          const game = (Object.values(games) as Array<{ name: string; code: string; participants: Array<{ id: string; token?: string }> }>)
+            .find((g) => g.name === 'Confetti Test Event')
+          const participant = game?.participants?.find(p => !!p.token)
+          return {
+            code: game?.code,
+            participantId: participant?.id,
+            participantToken: participant?.token
+          }
+        })
+        return Boolean(participantRouteData.code && participantRouteData.participantId && participantRouteData.participantToken)
+      }, {
+        message: 'Expected stored protected game and participant token to be available'
+      })
+      .toBe(true)
+
+    await page.goto(`/?code=${participantRouteData.code}&participant=${participantRouteData.participantToken}`)
+    await expect(page.getByRole('heading', { name: /tu asignación|your assignment/i })).toBeVisible()
+
+    await expect
+      .poll(async () => page.evaluate((key) => localStorage.getItem(key), `assignment-viewed-${participantRouteData.code}-${participantRouteData.participantId}`))
+      .toBe('true')
+  })
+
   test('should toggle language', async ({ page }) => {
     await page.goto('/')
     
