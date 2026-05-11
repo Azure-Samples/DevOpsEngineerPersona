@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           # Fail the workflow on:
           fail-on-severity: high  # moderate, high, critical
