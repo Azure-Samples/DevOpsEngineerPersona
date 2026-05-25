@@ -58,7 +58,7 @@
     "lucide-react": "^1.14.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.1",
-    "react-day-picker": "^9.13.0",
+    "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.1",
     "react-error-boundary": "^6.0.1",
     "recharts": "^3.8.1",
