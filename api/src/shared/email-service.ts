@@ -15,12 +15,12 @@ export function escapeHtml(text: string | undefined): string {
 }
 
 // Helper function to get translation with fallback to English
-function getTranslation<T extends Record<Language, any>>(translations: T, language: Language): T[Language] {
-  if (language in translations) {
-    return translations[language]
+function getTranslation<T>(translations: Partial<Record<Language, T>>, language: Language): T {
+  const translation = translations[language] ?? translations.en
+  if (translation) {
+    return translation
   }
-  // Fallback to English if translation not available
-  return translations['en']
+  throw new Error('English email translation is missing')
 }
 
 // Email notification types
@@ -179,13 +179,13 @@ export function generateOrganizerEmailContent(data: GameEmailTemplateData): { su
   const participantLink = hasUrl ? getParticipantLink(baseUrl, game.code) : ''
   const organizerLink = hasUrl ? getOrganizerLink(baseUrl, game.code, game.organizerToken) : ''
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; gameCreated: string; gameDetails: string; name: string;
     code: string; date: string; location: string; amount: string; participants: string;
     participantLink: string; participantLinkDesc: string; organizerLink: string;
     organizerLinkDesc: string; organizerToken: string; organizerTokenDesc: string;
     shareCodeDesc: string; footer: string;
-  }> = {
+  }>> = {
     es: {
       subject: `🎁 Tu juego de Zava Gift Exchange "${game.name}" ha sido creado`,
       greeting: '¡Hola!',
@@ -368,7 +368,7 @@ export function generateOrganizerEmailContent(data: GameEmailTemplateData): { su
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
   const currencySymbol = getCurrencySymbol(game.currency)
 
   const html = `
@@ -473,13 +473,13 @@ export function generateParticipantEmailContent(data: ParticipantEmailTemplateDa
   const hasUrl = hasBaseUrl()
   const participantLink = hasUrl ? getParticipantLink(baseUrl, game.code) : ''
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; intro: string; yourAssignment: string; youGiftTo: string;
     theirWish: string; noWish: string; theirDesiredGift: string; noDesiredGift: string;
     gameDetails: string; name: string; date: string; location: string; amount: string;
     notes: string; viewMore: string; link: string; linkDesc: string; gameCode: string;
     gameCodeDesc: string; footer: string; keepSecret: string;
-  }> = {
+  }>> = {
     es: {
       subject: `🎁 Tu asignación de Zava Gift Exchange para "${game.name}"`,
       greeting: `¡Hola ${participant.name}!`,
@@ -698,7 +698,7 @@ export function generateParticipantEmailContent(data: ParticipantEmailTemplateDa
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
   const currencySymbol = getCurrencySymbol(game.currency)
 
   const html = `
@@ -853,7 +853,7 @@ export function generateOrganizerRecoveryEmailContent(data: OrganizerRecoveryEma
   const organizerLink = getOrganizerLink(baseUrl, game.code, game.organizerToken)
   const hasUrl = baseUrl !== ''
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     recoveryRequested: string
@@ -866,7 +866,7 @@ export function generateOrganizerRecoveryEmailContent(data: OrganizerRecoveryEma
     notYou: string
     footer: string
     headerTitle: string
-  }> = {
+  }>> = {
     es: {
       subject: `🔑 Recuperación de enlace - "${game.name}"`,
       greeting: '¡Hola!',
@@ -995,7 +995,7 @@ export function generateOrganizerRecoveryEmailContent(data: OrganizerRecoveryEma
     }
   }
 
-  const t = translations[language] || translations.es
+  const t = getTranslation(translations, language)
 
   const html = `
 <!DOCTYPE html>
@@ -1092,7 +1092,7 @@ export function generateParticipantRecoveryEmailContent(data: ParticipantRecover
   const hasUrl = baseUrl !== ''
   const hasToken = !!participant.token
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     recoveryRequested: string
@@ -1106,7 +1106,7 @@ export function generateParticipantRecoveryEmailContent(data: ParticipantRecover
     footer: string
     headerTitle: string
     noTokenMessage: string
-  }> = {
+  }>> = {
     es: {
       subject: `🔑 Recuperación de enlace - "${game.name}"`,
       greeting: `¡Hola ${participant.name}!`,
@@ -1244,7 +1244,7 @@ export function generateParticipantRecoveryEmailContent(data: ParticipantRecover
     }
   }
 
-  const t = translations[language] || translations.es
+  const t = getTranslation(translations, language)
 
   // If game is not protected, participant doesn't have a token
   const showLink = hasUrl && hasToken
@@ -1397,11 +1397,11 @@ export function generateParticipantConfirmedEmailContent(data: ParticipantConfir
   const baseUrl = getBaseUrl()
   const organizerLink = getOrganizerLink(baseUrl, game.code, game.organizerToken)
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; confirmed: string; participantName: string;
     confirmedAt: string; viewPanel: string; totalConfirmed: string; footer: string;
     confirmationReceived: string;
-  }> = {
+  }>> = {
     es: {
       subject: `✅ ${participant.name} ha confirmado su asignación en "${game.name}"`,
       greeting: '¡Hola Organizador!',
@@ -1503,7 +1503,7 @@ export function generateParticipantConfirmedEmailContent(data: ParticipantConfir
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
   const confirmedCount = game.participants.filter(p => p.hasConfirmedAssignment).length
   const totalCount = game.participants.length
 
@@ -1576,10 +1576,10 @@ export function generateReassignmentRequestedEmailContent(data: ReassignmentRequ
   const baseUrl = getBaseUrl()
   const organizerLink = getOrganizerLink(baseUrl, game.code, game.organizerToken)
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; requested: string; participantName: string;
     pendingRequests: string; action: string; viewPanel: string; footer: string; newRequest: string;
-  }> = {
+  }>> = {
     es: {
       subject: `🔄 ${participant.name} solicita una nueva asignación en "${game.name}"`,
       greeting: '¡Hola Organizador!',
@@ -1681,7 +1681,7 @@ export function generateReassignmentRequestedEmailContent(data: ReassignmentRequ
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
   const pendingCount = game.reassignmentRequests?.length || 0
 
   const html = `
@@ -1755,10 +1755,10 @@ export interface ReassignmentResultEmailData {
 export function generateReassignmentResultEmailContent(data: ReassignmentResultEmailData): { subject: string; html: string; plainText: string } {
   const { game, participant, approved, newReceiver, language } = data
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subjectApproved: string; subjectRejected: string; greeting: string; approved: string;
     rejected: string; newAssignment: string; youGiftTo: string; contactOrganizer: string; footer: string;
-  }> = {
+  }>> = {
     es: {
       subjectApproved: `✅ Tu solicitud de reasignación fue aprobada - "${game.name}"`,
       subjectRejected: `❌ Tu solicitud de reasignación fue rechazada - "${game.name}"`,
@@ -1860,7 +1860,7 @@ export function generateReassignmentResultEmailContent(data: ReassignmentResultE
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
   const subject = approved ? t.subjectApproved : t.subjectRejected
 
   const html = `
@@ -1942,10 +1942,10 @@ export interface WishUpdatedEmailData {
 export function generateWishUpdatedEmailContent(data: WishUpdatedEmailData): { subject: string; html: string; plainText: string } {
   const { game, giver, receiver, language } = data
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; updated: string; theirWish: string; theirDesiredGift: string;
     headerTitle: string; footer: string;
-  }> = {
+  }>> = {
     es: {
       subject: `💡 ${receiver.name} actualizó su lista de deseos - "${game.name}"`,
       greeting: `¡Hola ${giver.name}!`,
@@ -2029,7 +2029,7 @@ export function generateWishUpdatedEmailContent(data: WishUpdatedEmailData): { s
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
 
   const html = `
 <!DOCTYPE html>
@@ -2104,11 +2104,11 @@ export function generateEventDetailsChangedEmailContent(data: EventDetailsChange
   const baseUrl = getBaseUrl()
   const participantLink = getParticipantLink(baseUrl, game.code)
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; changed: string; whatChanged: string; date: string;
     time: string; location: string; notes: string; from: string; to: string;
     currentDetails: string; viewEvent: string; footer: string;
-  }> = {
+  }>> = {
     es: {
       subject: `📝 Los detalles del evento han cambiado - "${game.name}"`,
       greeting: recipientName ? `¡Hola ${recipientName}!` : '¡Hola!',
@@ -2246,7 +2246,7 @@ export function generateEventDetailsChangedEmailContent(data: EventDetailsChange
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
 
   let changesHtml = ''
   let changesText = ''
@@ -2367,12 +2367,12 @@ export function generateReminderEmailContent(data: ReminderEmailData, recipientN
   const participantLink = getParticipantLink(baseUrl, game.code)
   const currencySymbol = getCurrencySymbol(game.currency)
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; reminder: string; customMessageLabel: string;
     eventDetails: string; name: string; date: string; time: string; location: string;
     amount: string; notes: string; confirmReminder: string; viewEvent: string;
     headerTitle: string; footer: string;
-  }> = {
+  }>> = {
     es: {
       subject: `🔔 Recordatorio: Zava Gift Exchange "${game.name}"`,
       greeting: `¡Hola ${recipientName}!`,
@@ -2528,7 +2528,7 @@ export function generateReminderEmailContent(data: ReminderEmailData, recipientN
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
 
   const html = `
 <!DOCTYPE html>
@@ -2643,11 +2643,11 @@ export function generateParticipantInvitationEmailContent(data: ParticipantInvit
   const participantLink = getParticipantLink(baseUrl, game.code)
   const currencySymbol = getCurrencySymbol(game.currency)
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; invited: string; eventDetails: string; name: string;
     date: string; time: string; location: string; amount: string; notes: string;
     action: string; viewEvent: string; footer: string;
-  }> = {
+  }>> = {
     es: {
       subject: `🎁 Has sido invitado al Zava Gift Exchange "${game.name}"`,
       greeting: `¡Hola ${participant.name}!`,
@@ -2785,7 +2785,7 @@ export function generateParticipantInvitationEmailContent(data: ParticipantInvit
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
 
   const html = `
 <!DOCTYPE html>
@@ -2867,11 +2867,11 @@ export function generateFullReassignmentEmailContent(data: FullReassignmentEmail
   const hasUrl = hasBaseUrl()
   const participantLink = hasUrl ? getParticipantLink(baseUrl, game.code) : ''
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string; greeting: string; intro: string; newAssignment: string; youGiftTo: string;
     theirWish: string; noWish: string; confirmAgain: string; viewEvent: string; gameCode: string;
     gameCodeDesc: string; footer: string; keepSecret: string; headerTitle: string;
-  }> = {
+  }>> = {
     es: {
       subject: `🔄 Nueva asignación en "${game.name}" - Reasignación del organizador`,
       greeting: `¡Hola ${participant.name}!`,
@@ -3018,7 +3018,7 @@ export function generateFullReassignmentEmailContent(data: FullReassignmentEmail
     }
   }
 
-  const t = translations[language]
+  const t = getTranslation(translations, language)
 
   const html = `
 <!DOCTYPE html>
@@ -3158,7 +3158,7 @@ export interface ParticipantRemovedEmailData {
 export function generateParticipantRemovedEmailContent(data: ParticipantRemovedEmailData): { subject: string; html: string; plainText: string } {
   const { gameName, participantName, organizerName, language } = data
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     removed: string
@@ -3167,7 +3167,7 @@ export function generateParticipantRemovedEmailContent(data: ParticipantRemovedE
     contact: string
     headerTitle: string
     footer: string
-  }> = {
+  }>> = {
     es: {
       subject: `🎄 Has sido eliminado del juego "${gameName}"`,
       greeting: `Hola ${participantName},`,
@@ -3336,7 +3336,7 @@ export interface GameDeletedEmailData {
 export function generateGameDeletedEmailContent(data: GameDeletedEmailData): { subject: string; html: string; plainText: string } {
   const { gameName, participantName, eventDate, organizerName, language } = data
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     cancelled: string
@@ -3346,7 +3346,7 @@ export function generateGameDeletedEmailContent(data: GameDeletedEmailData): { s
     questions: string
     headerTitle: string
     footer: string
-  }> = {
+  }>> = {
     es: {
       subject: `❌ El intercambio "${gameName}" ha sido cancelado`,
       greeting: `Hola ${participantName},`,
@@ -3573,7 +3573,7 @@ export function generateEventUpcomingEmailContent(data: EventUpcomingEmailData):
   const assignment = game.assignments.find(a => a.giverId === participant.id)
   const receiver = assignment ? game.participants.find(p => p.id === assignment.receiverId) : null
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     reminder: string
@@ -3590,7 +3590,7 @@ export function generateEventUpcomingEmailContent(data: EventUpcomingEmailData):
     dontForget: string
     headerTitle: string
     footer: string
-  }> = {
+  }>> = {
     es: {
       subject: `⏰ ¡Recordatorio! "${game.name}" es mañana`,
       greeting: `¡Hola ${participant.name}!`,
@@ -3877,7 +3877,7 @@ export function generateAllConfirmedEmailContent(data: AllConfirmedEmailData): {
 
   const confirmedCount = game.participants.filter(p => p.hasConfirmedAssignment).length
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     allConfirmed: string
@@ -3890,7 +3890,7 @@ export function generateAllConfirmedEmailContent(data: AllConfirmedEmailData): {
     manageGame: string
     headerTitle: string
     footer: string
-  }> = {
+  }>> = {
     es: {
       subject: `✅ ¡Todos confirmados! "${game.name}" está listo`,
       greeting: '¡Hola Organizador!',
@@ -4118,7 +4118,7 @@ export function generateNewOrganizerLinkEmailContent(data: NewOrganizerLinkEmail
   const hasUrl = hasBaseUrl()
   const organizerLink = hasUrl ? getOrganizerLink(baseUrl, game.code, game.organizerToken) : ''
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     tokenRegenerated: string
@@ -4131,7 +4131,7 @@ export function generateNewOrganizerLinkEmailContent(data: NewOrganizerLinkEmail
     securityNote: string
     headerTitle: string
     footer: string
-  }> = {
+  }>> = {
     es: {
       subject: `🔐 Nuevo enlace de organizador - "${game.name}"`,
       greeting: '¡Hola Organizador!',
@@ -4332,7 +4332,7 @@ export async function sendNewOrganizerLinkEmail(
 export function generateEmailUpdatedEmailContent(data: EmailUpdatedEmailData): { subject: string; html: string; plainText: string } {
   const { gameName, participantName, oldEmail, newEmail, language } = data
 
-  const translations: Record<Language, {
+  const translations: Partial<Record<Language, {
     subject: string
     greeting: string
     emailChanged: string
@@ -4343,7 +4343,7 @@ export function generateEmailUpdatedEmailContent(data: EmailUpdatedEmailData): {
     contact: string
     headerTitle: string
     footer: string
-  }> = {
+  }>> = {
     es: {
       subject: `🔔 Tu email ha sido actualizado - "${gameName}"`,
       greeting: `Hola ${participantName},`,

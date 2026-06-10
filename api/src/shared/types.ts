@@ -1,5 +1,5 @@
 // Supported languages for email notifications
-export type Language = 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl'
+export type Language = 'en' | 'es' | 'pt' | 'fr' | 'it' | 'ja' | 'zh' | 'de' | 'nl' | 'vi'
 
 // Input length limits to prevent abuse and stay within Cosmos DB 2MB item limit
 export const INPUT_LIMITS = {

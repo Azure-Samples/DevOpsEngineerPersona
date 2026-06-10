@@ -16,6 +16,7 @@ Each language has its own file:
 - `zh.ts` - Chinese (中文)
 - `de.ts` - German (Deutsch)
 - `nl.ts` - Dutch (Nederlands)
+- `vi.ts` - Vietnamese (Tiếng Việt)
 
 The `index.ts` file aggregates all translations and exports them as a single object.
 

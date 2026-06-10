@@ -1,4 +1,4 @@
-import { getEmailServiceStatus, initializeEmailService, escapeHtml } from '../shared/email-service'
+import { getEmailServiceStatus, initializeEmailService, escapeHtml, generateOrganizerEmailContent } from '../shared/email-service'
 
 // Mock the EmailClient
 jest.mock('@azure/communication-email', () => ({
@@ -106,6 +106,25 @@ describe('Email Service', () => {
 
     it('should handle empty string', () => {
       expect(escapeHtml('')).toBe('')
+    })
+  })
+
+  describe('Vietnamese language support', () => {
+    it('should gracefully fallback to English email copy for unsupported Vietnamese templates', () => {
+      const game = {
+        code: '123456',
+        name: 'Holiday Exchange',
+        date: '2026-12-24',
+        location: 'Main Office',
+        amount: '20',
+        organizerToken: 'org-token',
+        participants: [{ id: '1' }, { id: '2' }, { id: '3' }]
+      } as any
+
+      const content = generateOrganizerEmailContent({ game, language: 'vi' })
+      expect(content.subject).toContain('Holiday Exchange')
+      expect(content.subject).toContain('Your Zava Gift Exchange game')
+      expect(content.html).toContain('Game details')
     })
   })
 })

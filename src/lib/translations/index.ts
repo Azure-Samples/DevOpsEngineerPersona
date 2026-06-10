@@ -8,6 +8,7 @@ import { ko } from './ko'
 import { zh } from './zh'
 import { de } from './de'
 import { nl } from './nl'
+import { vi } from './vi'
 
 export const translations = {
   en,
@@ -19,7 +20,8 @@ export const translations = {
   ko,
   zh,
   de,
-  nl
+  nl,
+  vi
 }
 
 export type TranslationKey = keyof typeof translations.en
