@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -54,14 +54,19 @@ interface AssignmentViewProps {
 }
 
 const CONFETTI_COLORS = ['#F43F5E', '#F59E0B', '#10B981', '#3B82F6', '#A855F7', '#EC4899']
+// Using a prime factor avoids repeating columns too early and helps spread 24 pieces across the viewport.
+const CONFETTI_HORIZONTAL_SPACING_FACTOR = 11
 const CONFETTI_PIECES = Array.from({ length: 24 }, (_, index) => ({
   id: index,
   color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
-  left: `${(index * 11) % 100}%`,
+  left: `${(index * CONFETTI_HORIZONTAL_SPACING_FACTOR) % 100}%`,
   delay: (index % 6) * 0.08,
   duration: 1.8 + (index % 5) * 0.2,
   drift: ((index % 7) - 3) * 14
 }))
+const CONFETTI_DISPLAY_DURATION_MS = (
+  Math.max(...CONFETTI_PIECES.map((piece) => piece.delay + piece.duration)) * 1000
+)
 
 export function AssignmentView({
   game,
@@ -85,7 +90,8 @@ export function AssignmentView({
   const [isConfirming, setIsConfirming] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [giverHasConfirmed, setGiverHasConfirmed] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(true)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const lastConfettiReceiverId = useRef<string | null>(null)
 
   // Refresh game data from API
   const refreshGameData = useCallback(async () => {
@@ -154,10 +160,11 @@ export function AssignmentView({
   }, [currentReceiver])
 
   useEffect(() => {
-    if (!currentReceiver) return
+    if (!currentReceiver || lastConfettiReceiverId.current === currentReceiver.id) return
 
+    lastConfettiReceiverId.current = currentReceiver.id
     setShowConfetti(true)
-    const timer = setTimeout(() => setShowConfetti(false), 6000)
+    const timer = setTimeout(() => setShowConfetti(false), CONFETTI_DISPLAY_DURATION_MS)
     return () => clearTimeout(timer)
   }, [currentReceiver])
 
@@ -444,34 +451,6 @@ export function AssignmentView({
   if (!currentReceiver) {
     return (
       <div className="min-h-screen bg-background">
-        {showConfetti && (
-          <div
-            aria-hidden="true"
-            data-testid="assignment-confetti-overlay"
-            className="fixed inset-0 pointer-events-none overflow-hidden z-50"
-          >
-            {CONFETTI_PIECES.map((piece) => (
-              <motion.span
-                key={piece.id}
-                className="absolute top-[-12vh] h-3 w-2 rounded-sm"
-                style={{ left: piece.left, backgroundColor: piece.color }}
-                initial={{ opacity: 0, y: '-12vh', rotate: 0 }}
-                animate={{
-                  opacity: [0, 1, 1, 0],
-                  y: '112vh',
-                  x: [0, piece.drift, piece.drift / 2],
-                  rotate: [0, 280]
-                }}
-                transition={{
-                  duration: piece.duration,
-                  delay: piece.delay,
-                  ease: 'easeOut'
-                }}
-              />
-            ))}
-          </div>
-        )}
-
         <header className="flex justify-between items-center p-4 border-b">
           <Button variant="ghost" onClick={onBack} className="gap-2">
             <ArrowLeft size={20} />
@@ -501,6 +480,34 @@ export function AssignmentView({
 
   return (
     <div className="min-h-screen bg-background">
+      {showConfetti && (
+        <div
+          aria-hidden="true"
+          data-testid="assignment-confetti-overlay"
+          className="fixed inset-0 pointer-events-none overflow-hidden z-50"
+        >
+          {CONFETTI_PIECES.map((piece) => (
+            <motion.span
+              key={piece.id}
+              className="absolute top-[-12vh] h-3 w-2 rounded-sm"
+              style={{ left: piece.left, backgroundColor: piece.color }}
+              initial={{ opacity: 0, y: '-12vh', rotate: 0 }}
+              animate={{
+                opacity: [0, 1, 1, 0],
+                y: '112vh',
+                x: [0, piece.drift, piece.drift / 2],
+                rotate: [0, 280]
+              }}
+              transition={{
+                duration: piece.duration,
+                delay: piece.delay,
+                ease: 'easeOut'
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <header className="flex justify-between items-center p-4 border-b">
         <Button variant="ghost" onClick={onBack} className="gap-2">
           <ArrowLeft size={20} />
