@@ -264,7 +264,7 @@ jobs:
             const emoji  = passed ? '✅' : '❌'
             const status = passed
               ? 'Threshold (≥ 90%) **met**.'
-              : '⚠️ Score is **below** the 90 % threshold — please fix the violations.'
+              : '⚠️ Score is **below** the 90% threshold — please fix the violations.'
             const reportLine = reportUrl
               ? `\n\n🔗 [View full Lighthouse report](${reportUrl}) _(expires in 7 days)_`
               : '\n\n📊 Download the `lighthouse-report` artifact for details.'
@@ -307,7 +307,7 @@ jobs:
       - name: Fail if accessibility threshold not met
         if: steps.lhci.outputs.exit_code != '0'
         run: |
-          echo "Lighthouse accessibility score is below the 90 % threshold."
+          echo "Lighthouse accessibility score is below the 90% threshold."
           echo "See the lighthouse-report artifact or the PR comment for details."
           exit 1
 

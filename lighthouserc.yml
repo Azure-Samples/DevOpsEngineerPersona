@@ -13,7 +13,7 @@ ci:
 
   assert:
     assertions:
-      # Fail the job when the accessibility score drops below 90 %
+      # Fail the job when the accessibility score drops below 90%
       'categories:accessibility':
         - error
         - minScore: 0.9
