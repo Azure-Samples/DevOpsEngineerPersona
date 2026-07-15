@@ -207,11 +207,16 @@ jobs:
         if: always()
         run: |
           if [ -f .lighthouseci/manifest.json ]; then
-            SCORE=$(jq -r '(.[0].summary.accessibility * 100 | floor) | tostring' .lighthouseci/manifest.json)
-            echo "score=$SCORE" >> $GITHUB_OUTPUT
-            if [ "$SCORE" -ge 90 ]; then
-              echo "passed=true" >> $GITHUB_OUTPUT
+            SCORE=$(jq -r '(.[0].summary.accessibility * 100 | floor) // empty' .lighthouseci/manifest.json 2>/dev/null || true)
+            if [[ "$SCORE" =~ ^[0-9]+$ ]]; then
+              echo "score=$SCORE" >> $GITHUB_OUTPUT
+              if [ "$SCORE" -ge 90 ]; then
+                echo "passed=true" >> $GITHUB_OUTPUT
+              else
+                echo "passed=false" >> $GITHUB_OUTPUT
+              fi
             else
+              echo "score=N/A" >> $GITHUB_OUTPUT
               echo "passed=false" >> $GITHUB_OUTPUT
             fi
           else
