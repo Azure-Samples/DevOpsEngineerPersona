@@ -28,7 +28,7 @@ function saveViolations(pageName: string, violations: object[]): void {
 test.describe('Accessibility (axe-core)', () => {
   test('home page has no critical or serious violations', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const { violations } = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
     saveViolations('home', violations)
