@@ -84,12 +84,17 @@ if ls playwright-report/a11y/*.json 1>/dev/null 2>&1; then
   echo "" >> "$GITHUB_STEP_SUMMARY"
 
   # Count violations by impact level across all scanned pages.
-  # jq processes each file independently and outputs one number per file;
-  # awk sums the stream.
-  CRITICAL=$(jq '[.[] | select(.impact == "critical")] | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
-  SERIOUS=$(jq  '[.[] | select(.impact == "serious")]  | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
-  MODERATE=$(jq '[.[] | select(.impact == "moderate")] | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
-  MINOR=$(jq   '[.[] | select(.impact == "minor")]    | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
+  # Use jq -s to read all files at once; default to 0 if parsing fails so the
+  # summary step doesn't fail the whole job.
+  sum_impact() {
+    local impact="$1"
+    jq -s --arg impact "$impact" '[.[].[] | select(.impact == $impact)] | length' playwright-report/a11y/*.json || echo 0
+  }
+
+  CRITICAL=$(sum_impact critical)
+  SERIOUS=$(sum_impact serious)
+  MODERATE=$(sum_impact moderate)
+  MINOR=$(sum_impact minor)
   TOTAL=$((CRITICAL + SERIOUS + MODERATE + MINOR))
 
   if [ "$TOTAL" -eq 0 ]; then
