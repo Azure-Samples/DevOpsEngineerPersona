@@ -72,3 +72,37 @@ fi
 
 echo "" >> "$GITHUB_STEP_SUMMARY"
 echo "📊 **Full Report:** Download the \`${ARTIFACT_NAME}\` artifact for detailed HTML report." >> "$GITHUB_STEP_SUMMARY"
+
+# ---------------------------------------------------------------------------
+# Accessibility violation summary (populated by e2e/accessibility.spec.ts)
+# Each scanned page writes its axe-core violations to
+# playwright-report/a11y/<page>.json as a JSON array.
+# ---------------------------------------------------------------------------
+if ls playwright-report/a11y/*.json 1>/dev/null 2>&1; then
+  echo "" >> "$GITHUB_STEP_SUMMARY"
+  echo "### ♿ Accessibility Violations (axe-core)" >> "$GITHUB_STEP_SUMMARY"
+  echo "" >> "$GITHUB_STEP_SUMMARY"
+
+  # Count violations by impact level across all scanned pages.
+  # jq processes each file independently and outputs one number per file;
+  # awk sums the stream.
+  CRITICAL=$(jq '[.[] | select(.impact == "critical")] | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
+  SERIOUS=$(jq  '[.[] | select(.impact == "serious")]  | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
+  MODERATE=$(jq '[.[] | select(.impact == "moderate")] | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
+  MINOR=$(jq   '[.[] | select(.impact == "minor")]    | length' playwright-report/a11y/*.json 2>/dev/null | awk '{s+=$1} END {print s+0}')
+  TOTAL=$((CRITICAL + SERIOUS + MODERATE + MINOR))
+
+  if [ "$TOTAL" -eq 0 ]; then
+    echo "✅ No accessibility violations found across scanned pages." >> "$GITHUB_STEP_SUMMARY"
+  else
+    echo "| Severity | Count |" >> "$GITHUB_STEP_SUMMARY"
+    echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🔴 Critical | $CRITICAL |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🟠 Serious  | $SERIOUS  |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🟡 Moderate | $MODERATE |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🔵 Minor    | $MINOR    |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| **Total**   | **$TOTAL** |" >> "$GITHUB_STEP_SUMMARY"
+    echo "" >> "$GITHUB_STEP_SUMMARY"
+    echo "> Critical and serious violations fail the accessibility tests. Download the \`${ARTIFACT_NAME}\` artifact for full axe-core details." >> "$GITHUB_STEP_SUMMARY"
+  fi
+fi

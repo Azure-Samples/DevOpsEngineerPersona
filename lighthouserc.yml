@@ -1,0 +1,25 @@
+ci:
+  collect:
+    # Serve the pre-built frontend from dist/ via a local static server
+    staticDistDir: ./dist
+    numberOfRuns: 1
+    settings:
+      # Only run the accessibility category for speed; other categories are
+      # covered separately by axe-core in Playwright.
+      onlyCategories:
+        - accessibility
+      # Required flags for running headless Chrome in CI (no sandbox / display)
+      chromeFlags: '--no-sandbox --headless'
+
+  assert:
+    assertions:
+      # Fail the job when the accessibility score drops below 90 %
+      'categories:accessibility':
+        - error
+        - minScore: 0.9
+          aggregationMethod: pessimistic
+
+  upload:
+    # Upload to Google's temporary public storage so the report URL can be
+    # shared in the PR comment.  Reports expire automatically after 7 days.
+    target: temporary-public-storage
