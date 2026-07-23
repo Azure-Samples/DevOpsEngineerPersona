@@ -87,10 +87,10 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.action != 'closed'
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -134,10 +134,10 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.action != 'closed'
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -181,7 +181,7 @@ jobs:
       static_web_app_name: ${{ steps.infra.outputs.staticWebAppName }}
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Azure Login
         uses: azure/login@v3
@@ -261,7 +261,7 @@ jobs:
       url: ${{ steps.deploy.outputs.static_web_app_url }}
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Azure Login
         uses: azure/login@v3
@@ -314,10 +314,10 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -402,7 +402,7 @@ jobs:
       load_test_resource: ${{ steps.infra.outputs.loadTestResourceName }}
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Azure Login
         uses: azure/login@v3
@@ -467,7 +467,7 @@ jobs:
       url: ${{ steps.deploy.outputs.static_web_app_url }}
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Azure Login
         uses: azure/login@v3
@@ -518,10 +518,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -565,7 +565,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Azure Login
         uses: azure/login@v3
@@ -612,7 +612,7 @@ jobs:
       static_web_app_name: ${{ steps.prod-infra.outputs.staticWebAppName }}
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Azure Login
         uses: azure/login@v3
@@ -671,7 +671,7 @@ jobs:
       url: ${{ steps.deploy.outputs.static_web_app_url }}
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Azure Login
         uses: azure/login@v3
@@ -710,3 +710,4 @@ jobs:
           echo "**URL:** ${{ steps.deploy.outputs.static_web_app_url }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
