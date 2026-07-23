@@ -87,12 +87,10 @@ export async function initializeStorage(): Promise<void> {
             clientOptions.agent = new https.Agent({ ca })
             console.log(`🔒 Using custom CA cert from ${emulatorCertPath}`)
           } else {
-            // SAFETY: Only allow insecure connections in non-production environments
-            if (process.env.ENVIRONMENT === 'prod') {
-              throw new Error('Cannot disable TLS verification in production environment')
-            }
-            console.warn(`⚠️ Emulator CA cert not found. Using insecure Cosmos DB TLS agent (localhost only)`)
-            clientOptions.agent = new https.Agent({ rejectUnauthorized: false }) // eslint-disable-line -- safe: only for local emulator, blocked in prod
+            throw new Error(
+              `Cosmos DB Emulator CA certificate not found at "${emulatorCertPath}". ` +
+              `Run the emulator setup script or set COSMOS_EMULATOR_CERT_PATH to a valid cert file.`
+            )
           }
         } catch (err) {
           console.warn(`⚠️ Error reading emulator CA certificate:`, err)
