@@ -25,7 +25,7 @@ export function PrivacyView({ onBack }: PrivacyViewProps) {
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <Card className="p-6">
@@ -47,7 +47,7 @@ export function PrivacyView({ onBack }: PrivacyViewProps) {
 
         {/* Data Collection */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
@@ -70,7 +70,7 @@ export function PrivacyView({ onBack }: PrivacyViewProps) {
 
         {/* Data Usage */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
@@ -92,7 +92,7 @@ export function PrivacyView({ onBack }: PrivacyViewProps) {
 
         {/* Data Retention */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
@@ -114,7 +114,7 @@ export function PrivacyView({ onBack }: PrivacyViewProps) {
 
         {/* Third Parties */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
@@ -131,7 +131,7 @@ export function PrivacyView({ onBack }: PrivacyViewProps) {
 
         {/* Security & Data Protection */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
         >
@@ -155,7 +155,7 @@ export function PrivacyView({ onBack }: PrivacyViewProps) {
 
         {/* Contact */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
