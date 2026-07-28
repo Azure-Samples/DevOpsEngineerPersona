@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",
-    "@azure/cosmos": "~4.9.3",
+    "@azure/cosmos": "~4.10.0",
     "@azure/functions": "^4.16.1"
   },
   "devDependencies": {
