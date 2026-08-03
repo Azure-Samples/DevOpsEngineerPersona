@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.1.2",
     "azure-functions-core-tools": "^4.12.1",
     "jest": "^30.4.2",
     "ts-jest": "^29.2.5",
