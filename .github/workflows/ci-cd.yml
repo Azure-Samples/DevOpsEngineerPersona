@@ -373,7 +373,7 @@ jobs:
           echo "✅ Resource group deletion initiated (running in background)"
 
       - name: Comment PR
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const rg = '${{ env.PROJECT_NAME }}-pr-${{ github.event.pull_request.number }}';
