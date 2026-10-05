@@ -580,7 +580,7 @@ jobs:
           cat tests/load/load-test.jmx
 
       - name: Run Load Test
-        uses: azure/load-testing@v1
+        uses: azure/load-testing@575d8931b92662596940eb75c9eca346dd785813 # v1.2.7
         with:
           loadTestConfigFile: tests/load/config.yaml
           loadTestResource: ${{ needs.deploy-qa-infrastructure.outputs.load_test_resource }}
