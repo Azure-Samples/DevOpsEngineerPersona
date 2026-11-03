@@ -72,3 +72,42 @@ fi
 
 echo "" >> "$GITHUB_STEP_SUMMARY"
 echo "📊 **Full Report:** Download the \`${ARTIFACT_NAME}\` artifact for detailed HTML report." >> "$GITHUB_STEP_SUMMARY"
+
+# ---------------------------------------------------------------------------
+# Accessibility violation summary (populated by e2e/accessibility.spec.ts)
+# Each scanned page writes its axe-core violations to
+# playwright-report/a11y/<page>.json as a JSON array.
+# ---------------------------------------------------------------------------
+if ls playwright-report/a11y/*.json 1>/dev/null 2>&1; then
+  echo "" >> "$GITHUB_STEP_SUMMARY"
+  echo "### ♿ Accessibility Violations (axe-core)" >> "$GITHUB_STEP_SUMMARY"
+  echo "" >> "$GITHUB_STEP_SUMMARY"
+
+  # Count violations by impact level across all scanned pages.
+  # Use jq -s to read all files at once; default to 0 if parsing fails so the
+  # summary step doesn't fail the whole job.
+  sum_impact() {
+    local impact="$1"
+    jq -s --arg impact "$impact" '[.[].[] | select(.impact == $impact)] | length' playwright-report/a11y/*.json || echo 0
+  }
+
+  CRITICAL=$(sum_impact critical)
+  SERIOUS=$(sum_impact serious)
+  MODERATE=$(sum_impact moderate)
+  MINOR=$(sum_impact minor)
+  TOTAL=$((CRITICAL + SERIOUS + MODERATE + MINOR))
+
+  if [ "$TOTAL" -eq 0 ]; then
+    echo "✅ No accessibility violations found across scanned pages." >> "$GITHUB_STEP_SUMMARY"
+  else
+    echo "| Severity | Count |" >> "$GITHUB_STEP_SUMMARY"
+    echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🔴 Critical | $CRITICAL |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🟠 Serious  | $SERIOUS  |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🟡 Moderate | $MODERATE |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| 🔵 Minor    | $MINOR    |" >> "$GITHUB_STEP_SUMMARY"
+    echo "| **Total**   | **$TOTAL** |" >> "$GITHUB_STEP_SUMMARY"
+    echo "" >> "$GITHUB_STEP_SUMMARY"
+    echo "> Critical and serious violations fail the accessibility tests. Download the \`${ARTIFACT_NAME}\` artifact for full axe-core details." >> "$GITHUB_STEP_SUMMARY"
+  fi
+fi
