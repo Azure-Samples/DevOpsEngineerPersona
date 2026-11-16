@@ -292,7 +292,7 @@ export function CreateGameView({ onGameCreated, onBack, emailConfigured = false 
               <Label htmlFor="amount">{t('giftAmount')}</Label>
               <div className="flex gap-2">
                 <Select value={currency} onValueChange={setCurrency}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[180px]" aria-label={t('selectCurrency')}>
                     <SelectValue placeholder={t('selectCurrency')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -488,6 +488,7 @@ export function CreateGameView({ onGameCreated, onBack, emailConfigured = false 
                         variant="ghost"
                         size="sm"
                         onClick={() => removeParticipant(index)}
+                        aria-label={`${t('removeParticipant')} ${participant.name}`}
                       >
                         <X size={16} />
                       </Button>

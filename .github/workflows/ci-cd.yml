@@ -164,6 +164,159 @@ jobs:
         run: bash scripts/e2e-summary.sh "E2E Test Results" "" "playwright-report"
 
   # ==========================================================================
+  # ACCESSIBILITY AUDIT (Lighthouse CI)
+  # Runs Lighthouse against the pre-built dist/ artifact and enforces an
+  # accessibility score threshold of ≥ 90 %.  Results are uploaded to
+  # temporary public storage and posted as a PR comment so developers get
+  # immediate feedback without having to download any artifact.
+  # ==========================================================================
+  accessibility-audit:
+    name: Accessibility Audit (Lighthouse)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: build
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.14.x
+
+      - name: Run Lighthouse CI
+        id: lhci
+        run: |
+          set +e
+          lhci autorun --config=lighthouserc.yml 2>&1 | tee /tmp/lhci-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Extract Lighthouse results
+        id: lhci-results
+        if: always()
+        run: |
+          if [ -f .lighthouseci/manifest.json ]; then
+            SCORE=$(jq -r '(.[0].summary.accessibility * 100 | floor) // empty' .lighthouseci/manifest.json 2>/dev/null || true)
+            if [[ "$SCORE" =~ ^[0-9]+$ ]]; then
+              echo "score=$SCORE" >> $GITHUB_OUTPUT
+              if [ "$SCORE" -ge 90 ]; then
+                echo "passed=true" >> $GITHUB_OUTPUT
+              else
+                echo "passed=false" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "score=N/A" >> $GITHUB_OUTPUT
+              echo "passed=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "score=N/A" >> $GITHUB_OUTPUT
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+          REPORT_URL=$(grep -oP 'https://storage\.googleapis\.com\S+' /tmp/lhci-output.txt 2>/dev/null | head -1 || echo "")
+          echo "report_url=$REPORT_URL" >> $GITHUB_OUTPUT
+
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 7
+
+      - name: Lighthouse Accessibility Summary
+        if: always()
+        run: |
+          SCORE="${{ steps.lhci-results.outputs.score }}"
+          PASSED="${{ steps.lhci-results.outputs.passed }}"
+          REPORT_URL="${{ steps.lhci-results.outputs.report_url }}"
+
+          echo "## 🔦 Lighthouse Accessibility Audit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "$PASSED" == "true" ]]; then
+            echo "### ✅ Accessibility Threshold Met" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Accessibility Threshold Not Met" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | Score | Threshold |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|-----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ♿ Accessibility | ${SCORE}% | ≥ 90% |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$REPORT_URL" ]; then
+            echo "🔗 **Full Report:** [View on Temporary Storage]($REPORT_URL) _(expires in 7 days)_" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "📊 **Artifact:** Download the \`lighthouse-report\` artifact for the HTML report." >> $GITHUB_STEP_SUMMARY
+
+      - name: Post Lighthouse score as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const score     = '${{ steps.lhci-results.outputs.score }}'
+            const passed    = '${{ steps.lhci-results.outputs.passed }}' === 'true'
+            const reportUrl = '${{ steps.lhci-results.outputs.report_url }}'
+            const emoji  = passed ? '✅' : '❌'
+            const status = passed
+              ? 'Threshold (≥ 90%) **met**.'
+              : '⚠️ Score is **below** the 90% threshold — please fix the violations.'
+            const reportLine = reportUrl
+              ? `\n\n🔗 [View full Lighthouse report](${reportUrl}) _(expires in 7 days)_`
+              : '\n\n📊 Download the `lighthouse-report` artifact for details.'
+
+            const marker = '<!-- lhci-accessibility-comment -->'
+            const body = [
+              marker,
+              `## ${emoji} Lighthouse Accessibility Score`,
+              '',
+              '| Category | Score | Threshold |',
+              '|----------|-------|-----------|',
+              `| ♿ Accessibility | ${score}% | ≥ 90% |`,
+              '',
+              status + reportLine,
+            ].join('\n')
+
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            const existing = comments.find(c => c.body && c.body.includes(marker))
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              })
+            }
+
+      - name: Fail if accessibility threshold not met
+        if: steps.lhci.outputs.exit_code != '0'
+        run: |
+          echo "Lighthouse accessibility score is below the 90% threshold."
+          echo "See the lighthouse-report artifact or the PR comment for details."
+          exit 1
+
+  # ==========================================================================
   # PR INFRASTRUCTURE DEPLOYMENT
   # Creates an ephemeral Azure resource group for the PR with all necessary
   # resources (Static Web App, Cosmos DB, App Insights). Validates the Bicep
@@ -173,7 +326,7 @@ jobs:
     name: Deploy PR Infrastructure
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: e2e
+    needs: [e2e, accessibility-audit]
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
     outputs:
       resource_group: ${{ steps.rg.outputs.name }}
@@ -393,7 +546,7 @@ jobs:
     name: Deploy QA Infrastructure
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: e2e
+    needs: [e2e, accessibility-audit]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     outputs:
       resource_group: ${{ steps.rg.outputs.name }}
